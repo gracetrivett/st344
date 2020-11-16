@@ -1,0 +1,532 @@
+---
+title: "EDA"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, fig.width = 10, fig.height = 5)
+```
+
+```{r chunk1, echo=FALSE, message=FALSE}
+library(readxl)
+CovidData <- read.csv("tidycovid19.csv")
+library(lubridate)
+CovidData$date = as.Date(parse_date_time(CovidData$date,orders=c("y","ym","ymd")))
+library(rio)
+library(dplyr)
+```
+
+The CovidData dataset only has the variable 'region' which puts Europe and Central Asia in one category. We are not interested in Central Asia, so here I add the 'countries' dataset to the CovidData dataset. This allows us to select just the data for Europe, North America and South America using the variable 'continent'. 
+
+```{r chunk2, echo=FALSE}
+# adding the countries dataset
+Countries <- import("Countries.xlsx", setclass = "tibble")
+Countries <- filter(Countries, country %in% CovidData$country)
+# Join the data frames and implement categorical data as factors
+CovidData <- left_join(CovidData, Countries, by = "country")
+CovidData <- mutate(CovidData, country = factor(country), 
+                    continent = factor(continent))
+
+```
+
+The line graphs below show the change in the variables 'lockdown', 'soc_dist' and 'mov_rest' for each continent over the whole time frame of the data. These refer to the number of lockdown measures, number of social distancing measures and number of movement restrictions respectively. They are a net of lifted restrictions (*although I'm not sure what this means?*) reported by ACAPS. 
+
+These graphs are very messy but give a general overview of how the measures change over time. 
+
+Grouping the data by continent isn't the most useful as there is still a huge amount of variation within each continent but it is an easy way to separate the data rather than looking at all of it at once.
+
+
+```{r chunk3, echo=FALSE}
+EuropeData <- CovidData %>% filter( (continent =="Europe") )
+LockdownInEurope <- {EuropeData %>% select(date, lockdown, country) }
+library(ggplot2)
+plotA <- {LockdownInEurope %>% ggplot(aes(x = date, y = lockdown, group = country, colour=country))} +
+  geom_line() +
+  xlab("Date") +
+  ylab("lockdown measures") +
+  ggtitle("lockdown measures vs date in europe", 
+          subtitle = "-") +
+  scale_x_date(date_breaks = "months", date_labels = "%b-%y") + theme_gray() 
+print(plotA)
+
+```
+
+```{r chunk 4, echo=FALSE}
+NorthAmericaData <-  CovidData %>% filter( (continent =="North America") )
+plotB <- {NorthAmericaData %>% ggplot(aes(x = date, y = lockdown, group = country, colour=country))} +
+  geom_line() +
+  xlab("Date") +
+  ylab("lockdown measures") +
+  ggtitle("lockdown measures vs date in north america", 
+          subtitle = "-") +
+  scale_x_date(date_breaks = "months", date_labels = "%b-%y") + theme_gray() 
+print(plotB)
+
+```
+
+```{r chunk5, echo=FALSE}
+SouthAmericaData <-  CovidData %>% filter( (continent =="South America") )
+ plotC <- {SouthAmericaData %>% ggplot(aes(x = date, y = lockdown, group = country, colour=country))} +
+   geom_line() +
+   xlab("Date") +
+   ylab("lockdown measures") +
+   ggtitle("lockdown measures vs date in south america", 
+           subtitle = "-") +
+   scale_x_date(date_breaks = "months", date_labels = "%b-%y") + theme_gray() 
+ print(plotC)
+```
+
+```{r chunk6, echo=FALSE}
+plotD <- {EuropeData %>% ggplot(aes(x = date, y = soc_dist, group = country, colour=country))} +
+  geom_line() +
+  xlab("Date") +
+  ylab("number of social distancing measures") +
+  ggtitle("social distancing measures vs date in europe", 
+          subtitle = "-") +
+  scale_x_date(date_breaks = "months", date_labels = "%b-%y") + theme_gray() 
+print(plotD)
+```
+
+```{r chunk7, echo=FALSE}
+plotE <- {NorthAmericaData %>% ggplot(aes(x = date, y = soc_dist, group = country, colour=country))} +
+  geom_line() +
+  xlab("Date") +
+  ylab("number of social distancing measures") +
+  ggtitle("social distancing measures vs date in north america", 
+          subtitle = "-") +
+  scale_x_date(date_breaks = "months", date_labels = "%b-%y") + theme_gray() 
+print(plotE)
+```
+
+```{r chunk8, echo=FALSE}
+plotF <- {SouthAmericaData %>% ggplot(aes(x = date, y = soc_dist, group = country, colour=country))} +
+  geom_line() +
+  xlab("Date") +
+  ylab("number of social distancing measures") +
+  ggtitle("social distancing measures vs date in south america", 
+          subtitle = "-") +
+  scale_x_date(date_breaks = "months", date_labels = "%b-%y") + theme_gray() 
+print(plotF)
+```
+
+```{r chunk9, echo=FALSE}
+plotG <- {EuropeData %>% ggplot(aes(x = date, y = mov_rest, group = country, colour=country))} +
+  geom_line() +
+  xlab("Date") +
+  ylab("number of movement restrictions") +
+  ggtitle("movement restrictions vs date in europe", 
+          subtitle = "-") +
+  scale_x_date(date_breaks = "months", date_labels = "%b-%y") + theme_gray() 
+print(plotG)
+```
+
+```{r chunk10, echo=FALSE}
+plotH <- {NorthAmericaData %>% ggplot(aes(x = date, y = mov_rest, group = country, colour=country))} +
+  geom_line() +
+  xlab("Date") +
+  ylab("number of movement restrictions") +
+  ggtitle("movement restrictions vs date in north america", 
+          subtitle = "-") +
+  scale_x_date(date_breaks = "months", date_labels = "%b-%y") + theme_gray() 
+print(plotH)
+```
+
+```{r chunk11, echo=FALSE}
+plotI <- {SouthAmericaData %>% ggplot(aes(x = date, y = mov_rest, group = country, colour=country))} +
+  geom_line() +
+  xlab("Date") +
+  ylab("number of movement restrictions") +
+  ggtitle("movement restrictions vs date in south america", 
+          subtitle = "-") +
+  scale_x_date(date_breaks = "months", date_labels = "%b-%y") + theme_gray() 
+print(plotI)
+```
+
+```{r chuk12, echo=FALSE, message=FALSE}
+library(tidyverse)
+
+ EAData <- {CovidData %>% 
+     filter( ( str_detect(continent, "North America") | str_detect(continent, "South America") | str_detect(continent, "Europe")) )}
+
+ PlotJData = {EAData %>% 
+     group_by(country) %>% 
+     summarise(max_lockdown=max(lockdown),
+               continent=continent)}
+ 
+ PlotJData <- distinct(PlotJData)
+ PlotJData <- na.omit(PlotJData)
+ 
+
+ 
+ PlotJData$country = with(PlotJData, reorder(country, max_lockdown))
+ 
+  plotJ <- PlotJData %>% ggplot(aes(x = country, y = max_lockdown, fill=continent)) + 
+   geom_bar(stat="identity") + xlab("country") +
+   ylab("maximum lockdown measures") +
+   ggtitle("maximum number of lockdown measures over the whole time period for each country ") + 
+   theme_gray() +
+   theme(axis.text.x=element_text(angle=90,hjust=1, vjust=0.5))
+ print(plotJ)
+```
+
+In the above graph we can see that there are 16 countries for which the maximum number of lockdown measures is 0. This includes the United States, which we know from just the news was greatly affected by the pandemic. Therefore the variable "lockdown measures" is probably not the most representative of the effects of the pandemic and so not the most useful for us.
+```{r chunk13, echo=FALSE, message=FALSE}
+
+ PlotKData = {EAData %>% 
+     group_by(country) %>% 
+     summarise(max_soc_dist=max(soc_dist),
+               continent=continent)}
+ 
+ PlotKData <- distinct(PlotKData)
+ PlotKData <- na.omit(PlotKData)
+ 
+
+ 
+ PlotKData$country = with(PlotKData, reorder(country, max_soc_dist))
+ 
+  plotK <- PlotKData %>% ggplot(aes(x = country, y = max_soc_dist, fill=continent)) + 
+   geom_bar(stat="identity") + xlab("country") +
+   ylab("maximum social distancing measures") +
+   ggtitle("maximum number of social distancing measures over the whole time period for each country ") + 
+   theme_gray() +
+   theme(axis.text.x=element_text(angle=90,hjust=1, vjust=0.5))
+ print(plotK)
+```
+
+The [ACAPS ReadMe](https://www.acaps.org/sites/acaps/files/key-documents/files/acaps_-_covid-19_government_measures_dataset_readme.pdf) describes "movement restrictions" as containg measures such as border checks, border closure, international flight restrictions and domestic travel restrictions, all of which are not hugely relevant to the specifics of our task.
+"Social distancing" contains measures such as limits to public gatherings and closure of businesses and public services which would be more relevant to OmniCorp. 
+
+```{r chunk14, echo=FALSE, message=FALSE}
+ PlotLData = {EAData %>% 
+     group_by(country) %>% 
+     summarise(max_mov_rest=max(mov_rest),
+               continent=continent)}
+ 
+ PlotLData <- distinct(PlotLData)
+ PlotLData <- na.omit(PlotLData)
+ 
+
+ 
+ PlotLData$country = with(PlotLData, reorder(country, max_mov_rest))
+ 
+  plotL <- PlotLData %>% ggplot(aes(x = country, y = max_mov_rest, fill=continent)) + 
+   geom_bar(stat="identity") + xlab("country") +
+   ylab("maximum movement restrictions") +
+   ggtitle("maximum number of movement restrictions over the whole time period for each country ") + 
+   theme_gray() +
+   theme(axis.text.x=element_text(angle=90,hjust=1, vjust=0.5))
+ print(plotL)
+```
+
+```{r chunk15, echo=FALSE}
+mean_ <- function(...) mean(..., na.rm=T)
+
+SubData = {EAData %>% 
+     group_by(country) %>% 
+     summarise(max_lockdown=max(lockdown), mean_lockdown=mean_(lockdown), 
+               max_soc_dist=max(soc_dist), mean_soc_dist=mean_(soc_dist),
+               max_mov_rest=max(mov_rest), mean_mov_rest=mean_(mov_rest), 
+               mean_gcmr_residential=mean_(gcmr_residential),
+               mean_gcmr_retail_recreation=mean_(gcmr_retail_recreation),
+               mean_gcmr_grocery_pharmacy=mean_(gcmr_grocery_pharmacy),
+               continent=continent)}
+```
+
+
+```{r chunk19}
+plotP <- {SubData %>% ggplot(aes(x = mean_lockdown,
+                                    y = mean_gcmr_retail_recreation,
+                                    colour=continent))} +
+   geom_point() + 
+   xlab("Mean number of lockdown measures") +
+   ylab("frequency that people visit retail and recreation places (% change from the baseline)") +
+   ggtitle("Mean number of lockdown measures vs frequency that people visit retail and recreation places") +
+   theme_gray()
+ print(plotP) 
+```
+
+```{r chunk20}
+plotQ <- {SubData %>% ggplot(aes(x = mean_soc_dist,
+                                    y = mean_gcmr_retail_recreation,
+                                    colour=continent))} +
+   geom_point() + 
+   xlab("Mean number of social distancing measures") +
+   ylab("frequency that people visit retail and recreation places (% change from the baseline)") +
+   ggtitle("Mean number of social distancing measures vs frequency that people visit retail and recreation places") +
+   theme_gray()
+ print(plotQ) 
+```
+
+```{r chunk21}
+plotR <- {SubData %>% ggplot(aes(x = mean_mov_rest,
+                                    y = mean_gcmr_retail_recreation,
+                                    colour=continent))} +
+   geom_point() + 
+   xlab("Mean number of movement restrictions") +
+   ylab("frequency that people visit retail and recreation places (% change from the baseline)") +
+   ggtitle("Mean number of movement restrictions vs frequency that people visit retail and recreation places") +
+   theme_gray()
+ print(plotR) 
+```
+
+```{r chunk22}
+plotS <- {SubData %>% ggplot(aes(x = mean_lockdown,
+                                    y = mean_gcmr_grocery_pharmacy,
+                                    colour=continent))} +
+   geom_point() + 
+   xlab("Mean number of lockdown measures") +
+   ylab("frequency that people visit grocery stores and pharmacies (% change from the baseline)") +
+   ggtitle("Mean number of lockdown measures vs frequency that people visit grocery stores and pharmacies") +
+   theme_gray()
+ print(plotS) 
+```
+
+```{r chunk23}
+plotT <- {SubData %>% ggplot(aes(x = mean_soc_dist,
+                                    y = mean_gcmr_grocery_pharmacy,
+                                    colour=continent))} +
+   geom_point() + 
+   xlab("Mean number of social distancing measures") +
+   ylab("frequency that people visit grocery stores and pharmacies (% change from the baseline)") +
+   ggtitle("Mean number of social distancing measures vs frequency that people visit grocery stores and pharmacies") +
+   theme_gray()
+ print(plotT) 
+```
+
+```{r chunk24}
+plotU <- {SubData %>% ggplot(aes(x = mean_mov_rest,
+                                    y = mean_gcmr_grocery_pharmacy,
+                                    colour=continent))} +
+   geom_point() + 
+   xlab("Mean number of movement restrictions") +
+   ylab("frequency that people visit grocery stores and pharmacies (% change from the baseline)") +
+   ggtitle("Mean number of movement restrictions vs frequency that people visit grocery stores and pharmacies") +
+   theme_gray()
+ print(plotU) 
+```
+
+```{r chunk25}
+plotV <- {SubData %>% ggplot(aes(x = max_soc_dist,
+                                    y = mean_gcmr_retail_recreation,
+                                    colour=continent))} +
+   geom_point() + 
+   xlab("Maximum number of social distancing measures") +
+   ylab("frequency that people visit retail and recreation places (% change from the baseline)") +
+   ggtitle("Maximum number of social distancing measures vs frequency that people visit retail and recreation places") +
+   theme_gray()
+ print(plotV) 
+```
+
+```{r chunk26}
+plotW <- {SubData %>% ggplot(aes(x = max_soc_dist,
+                                    y = mean_gcmr_grocery_pharmacy,
+                                    colour=continent))} +
+   geom_point() + 
+   xlab("Maximum number of social distancing measures") +
+   ylab("frequency that people visit grocery stores and pharmacies (% change from the baseline)") +
+   ggtitle("Maximum number of social distancing measures vs frequency that people visit grocery stores and pharmacies") +
+   theme_gray()
+ print(plotW) 
+```
+
+```{r chunk27}
+# This code will split the data into 2 phases by date.
+ EAData$date = as.Date(parse_date_time(EAData$date,orders=c("y","ym","ymd")))
+ library(stringr)
+Phase1Data <- filter(EAData, date < "2020-06-30")
+Phase2Data <- filter(EAData, date >= "2020-06-30")
+
+Phase1Data = {Phase1Data %>% 
+     group_by(country) %>% 
+     summarise(max_lockdown=max(lockdown), mean_lockdown=mean_(lockdown), 
+               max_soc_dist=max(soc_dist), mean_soc_dist=mean_(soc_dist),
+               max_mov_rest=max(mov_rest), mean_mov_rest=mean_(mov_rest), 
+               mean_gcmr_residential=mean_(gcmr_residential),
+               mean_gcmr_retail_recreation=mean_(gcmr_retail_recreation),
+               mean_gcmr_grocery_pharmacy=mean_(gcmr_grocery_pharmacy),
+               continent=continent, date=date, gdp_capita=gdp_capita)}
+
+Phase2Data = {Phase2Data %>% 
+     group_by(country) %>% 
+     summarise(max_lockdown=max(lockdown), mean_lockdown=mean_(lockdown), 
+               max_soc_dist=max(soc_dist), mean_soc_dist=mean_(soc_dist),
+               max_mov_rest=max(mov_rest), mean_mov_rest=mean_(mov_rest), 
+               mean_gcmr_residential=mean_(gcmr_residential),
+               mean_gcmr_retail_recreation=mean_(gcmr_retail_recreation),
+               mean_gcmr_grocery_pharmacy=mean_(gcmr_grocery_pharmacy),
+               continent=continent, date=date, gdp_capita=gdp_capita)}
+
+EAData = {EAData %>% 
+     group_by(country) %>% 
+     summarise(max_lockdown=max(lockdown), mean_lockdown=mean_(lockdown), 
+               max_soc_dist=max(soc_dist), mean_soc_dist=mean_(soc_dist),
+               max_mov_rest=max(mov_rest), mean_mov_rest=mean_(mov_rest), 
+               mean_gcmr_residential=mean_(gcmr_residential),
+               mean_gcmr_retail_recreation=mean_(gcmr_retail_recreation),
+               mean_gcmr_grocery_pharmacy=mean_(gcmr_grocery_pharmacy),
+               continent=continent, date=date, gdp_capita=gdp_capita)}
+```
+
+I have split the data in two halves by date. The first half has the data up to the end of June and the second half is from the beginning of July onwards. This is only a rough split that I have chosen from looking at the rough patterns in the first graphs. 
+
+In these graphs I have made the scale of the x and y axis the same for the 2 phases to be able to compare them better.
+
+```{r chunk28}
+plotX <- {Phase1Data %>% ggplot(aes(x = max_soc_dist,
+                                    y = mean_gcmr_retail_recreation,
+                                    colour=continent))} +
+   geom_point() + 
+   xlab("Maximum number of social distancing measures") +
+   ylab("frequency that people visit retail and recreation places (% change from the baseline)") +
+   ggtitle("Maximum number of social distancing measures vs frequency that people visit retail and recreation places", subtitle = "Phase 1, up to the end of June") +
+   theme_gray() + xlim(-30,30) +ylim(-70,70)
+ print(plotX) 
+```
+
+```{r chunk29}
+plotY <- {Phase2Data %>% ggplot(aes(x = max_soc_dist,
+                                    y = mean_gcmr_retail_recreation,
+                                    colour=continent))} +
+   geom_point() + 
+   xlab("Maximum number of social distancing measures") +
+   ylab("frequency that people visit retail and recreation places (% change from the baseline)") +
+   ggtitle("Maximum number of social distancing measures vs frequency that people visit retail and recreation places", subtitle = "Phase 2, from the start of July") +
+   theme_gray() +xlim(-30,30) +ylim(-70,70)
+ print(plotY) 
+```
+
+```{r chunk30}
+plotZ <- {Phase1Data %>% ggplot(aes(x = max_soc_dist,
+                                    y = mean_gcmr_grocery_pharmacy,
+                                    colour=continent))} +
+   geom_point() + 
+   xlab("Maximum number of social distancing measures") +
+   ylab("frequency that people visit grocery stores and pharmacies (% change from the baseline)") +
+   ggtitle("Maximum number of social distancing measures vs frequency that people visit grocery stores and pharmacies", subtitle = "Phase 1, up to the end of June") +
+   theme_gray() + xlim(-30,30) +ylim(-50,50)
+ print(plotZ) 
+```
+
+```{r chunk31}
+plotAA <- {Phase2Data %>% ggplot(aes(x = max_soc_dist,
+                                    y = mean_gcmr_grocery_pharmacy,
+                                    colour=continent))} +
+   geom_point() + 
+   xlab("Maximum number of social distancing measures") +
+   ylab("frequency that people visit grocery stores and pharmacies (% change from the baseline)") +
+   ggtitle("Maximum number of social distancing measures vs frequency that people visit grocery stores and pharmacies", subtitle= "Phase 2, from the start of July") +
+   theme_gray() + xlim(-30,30) +ylim(-50,50)
+ print(plotAA) 
+```
+
+```{r chunk32, message=FALSE, warning=FALSE, error=FALSE}
+plotAB <- {EAData %>% ggplot(aes(x = gdp_capita,
+                                    y = mean_gcmr_retail_recreation,
+                                    colour=continent))} +
+   geom_point() + 
+   xlab("GDP per capita") +
+   ylab("frequency that people visit retail and recreation places (% change from the baseline)") +
+   ggtitle("GDP per capita vs frequency that people visit places of retail and recreation", subtitle="Mean taken over all the data") +
+   theme_gray()
+ print(plotAB) 
+```
+
+```{r chunk33, message=FALSE, warning=FALSE, error=FALSE}
+plotAC <- {EAData %>% ggplot(aes(x = gdp_capita,
+                                    y = mean_gcmr_grocery_pharmacy,
+                                    colour=continent))} +
+   geom_point() + 
+   xlab("GDP per capita") +
+   ylab("frequency that people visit grocery stores and pharmacies (% change from the baseline)") +
+   ggtitle("GDP per capita vs frequency that people visit grocery stores and pharmacies", subtitle="Mean taken over all the data") 
+   theme_gray()
+ print(plotAC)
+```
+
+```{r chunk34, message=FALSE, warning=FALSE, error=FALSE}
+plotAD <- {EAData %>% ggplot(aes(x = gdp_capita,
+                                    y = max_soc_dist,
+                                    colour=continent))} +
+   geom_point() + 
+   xlab("GDP per capita") +
+   ylab("Maximum number of social distancing measures") +
+   ggtitle("GDP per capita vs maximum number of social distancing measures", subtitle="Maximum taken over all the data") +
+   theme_gray()
+ print(plotAD)
+```
+
+```{r chunk35, message=FALSE, warning=FALSE, error=FALSE}
+plotAE <- {EAData %>% ggplot(aes(x = gdp_capita,
+                                    y = mean_soc_dist,
+                                    colour=continent))} +
+   geom_point() + 
+   xlab("GDP per capita") +
+   ylab("Mean number of social distancing measures") +
+   ggtitle("GDP per capita vs mean number of social distancing measures", subtitle="Mean taken over all the data") +
+   theme_gray()
+ print(plotAE)
+```
+
+```{r chunk36, message=FALSE, warning=FALSE, error=FALSE}
+plotAF <- {Phase1Data %>% ggplot(aes(x = gdp_capita,
+                                    y = mean_gcmr_retail_recreation,
+                                    colour=continent))} +
+   geom_point() + 
+   xlab("GDP per capita") +
+   ylab("frequency that people visit retail and recreation places (% change from the baseline)") +
+   ggtitle("GDP per capita vs frequency that people visit places of retail and recreation", subtitle="Mean taken over phase 1") +
+   theme_gray()
+ print(plotAF) 
+```
+
+```{r chunk37, message=FALSE, warning=FALSE, error=FALSE}
+plotAG <- {Phase2Data %>% ggplot(aes(x = gdp_capita,
+                                    y = mean_gcmr_retail_recreation,
+                                    colour=continent))} +
+   geom_point() + 
+   xlab("GDP per capita") +
+   ylab("frequency that people visit retail and recreation places (% change from the baseline)") +
+   ggtitle("GDP per capita vs frequency that people visit places of retail and recreation", subtitle="Mean taken over phase 2") +
+   theme_gray()
+ print(plotAG) 
+```
+
+```{r chunk38, message=FALSE, warning=FALSE, error=FALSE}
+plotAH <- {Phase1Data %>% ggplot(aes(x = gdp_capita,
+                                    y = mean_gcmr_grocery_pharmacy,
+                                    colour=continent))} +
+   geom_point() + 
+   xlab("GDP per capita") +
+   ylab("frequency that people visit grocery stores and pharmacies (% change from the baseline)") +
+   ggtitle("GDP per capita vs frequency that people visit grocery stores and pharmacies", subtitle="Mean taken over phase 1") 
+   theme_gray()
+ print(plotAH)
+```
+
+```{r chunk39, message=FALSE, warning=FALSE, error=FALSE}
+plotAI <- {Phase2Data %>% ggplot(aes(x = gdp_capita,
+                                    y = mean_gcmr_grocery_pharmacy,
+                                    colour=continent))} +
+   geom_point() + 
+   xlab("GDP per capita") +
+   ylab("frequency that people visit grocery stores and pharmacies (% change from the baseline)") +
+   ggtitle("GDP per capita vs frequency that people visit grocery stores and pharmacies", subtitle="Mean taken over phase 2") 
+   theme_gray()
+ print(plotAI)
+```
+
+```{r chunk40}
+UKData <- filter(CovidData, country=="United Kingdom")
+```
+
+```{r chunk41}
+plotAI <- {UKData %>% ggplot(aes(x = date,
+                                    y = soc_dist))} +
+   geom_point() + 
+   xlab("Date") +
+   ylab("Number of social distancing measures)") +
+   ggtitle("Number of social distancing measures by date in the UK") 
+   theme_gray()
+ print(plotAI)
+```
+
